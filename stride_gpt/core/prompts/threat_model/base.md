@@ -39,6 +39,7 @@ Additional threat reference content is available for subsystems with language-mo
 - **`insider_threat`** — AI Insider Threat. Load **in addition to `agentic`** when the subsystem grants the agent meaningful autonomy, persistent credentials, broad tool access, or operates with limited real-time human oversight. Adds `INSIDER_CATEGORY` and `autonomy_level`.
 - **`mitre_enterprise`** — MITRE ATT&CK Enterprise. Load for almost any subsystem with a traditional software / infrastructure surface (web, server, cloud, container, SaaS). Adds `MITRE_ATTACK` (Enterprise technique IDs and names) to each threat.
 - **`mitre_atlas`** — MITRE ATLAS (adversarial techniques against AI systems). Load **in addition to `mitre_enterprise`** when the subsystem has ML/LLM behaviour in scope. Adds ATLAS technique IDs (e.g. `AML.T0051`) to the same `MITRE_ATTACK` field.
+- **`owasp_mobile`** — OWASP Mobile Top 10 (2024) and MASVS v2.1. Load for subsystems that are, or talk to, an application installed on an end user's own device. Adds `owasp_mobile` (M1–M10) and `masvs_control` (MASVS-STORAGE and siblings).
 
 Call `list_references` for the authoritative current catalogue — each card's frontmatter includes its full `when_to_load` trigger and the schema fields it adds. New cards may be available beyond the three listed above. Then call `load_reference(name=...)` for each card whose trigger conditions match the subsystem.
 

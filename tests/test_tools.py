@@ -465,6 +465,7 @@ class TestExecuteTool:
         names = {entry["name"] for entry in catalogue}
         assert names == {
             "genai", "agentic", "insider_threat", "mitre_enterprise", "mitre_atlas",
+            "owasp_mobile", "gematik_epa",
         }
         # Each entry must carry the trigger condition — that's the whole
         # point of cheap discovery.

@@ -185,6 +185,7 @@ class TestListReferences:
         names = {entry["name"] for entry in catalogue}
         assert names == {
             "genai", "agentic", "insider_threat", "mitre_enterprise", "mitre_atlas",
+            "owasp_mobile", "gematik_epa",
         }
 
     def test_entries_carry_trigger_metadata(self):
