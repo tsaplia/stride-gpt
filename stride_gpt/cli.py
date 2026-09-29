@@ -731,6 +731,7 @@ def analyze(
     max_tool_calls: Annotated[int, typer.Option(help="Max code-exploration calls; reporting a threat doesn't spend it (0 = unlimited).")] = 0,
     auto_approve: Annotated[bool, typer.Option("--yes", "-y", help="Auto-approve the analysis plan.")] = False,
     app_type: Annotated[AppTypeOverride, typer.Option("--app-type", help="Override the planner's app-type classification. 'auto' keeps the planner's choice.")] = AppTypeOverride.auto,
+    plan_file: Annotated[Path | None, typer.Option("--plan", help="Analysis plan JSON to use instead of running the planner. Every run with -o already writes its plan to <output-stem>.plan.json; edit that file's subsystems by hand and pass it back here to analyse the decomposition you want.")] = None,
 ) -> None:
     """Deep agentic analysis of a codebase for STRIDE threats."""
     from stride_gpt.agent.html_report import render_html
@@ -738,6 +739,7 @@ def analyze(
     from stride_gpt.agent.planner import format_plan_for_display
     from stride_gpt.agent.progress import RichProgress
     from stride_gpt.agent.report import render_json, render_markdown, render_sarif, save_report
+    from stride_gpt.core.schemas import AnalysisPlan
 
     models = _build_model_pair(
         worker_model=worker_model,
@@ -773,8 +775,20 @@ def analyze(
     # Phase 1: Plan
     started_at = datetime.now(UTC)
     progress.phase_start("Phase 1", "Planning")
-    progress.status("Scanning codebase and generating plan...")
-    plan = create_analysis_plan(models, target)
+    if plan_file is not None:
+        # A hand-written plan replaces the planner entirely: same run, same
+        # subsystem names, every time — which is what makes two runs
+        # comparable.
+        progress.status(f"Loading plan from {plan_file}...")
+        try:
+            plan = AnalysisPlan.model_validate_json(plan_file.read_text())
+        except (OSError, ValueError) as exc:
+            console.print(f"[red]Could not read plan {plan_file}: {exc}[/red]")
+            raise typer.Exit(1) from exc
+        plan = plan.model_copy(update={"target_path": str(target)})
+    else:
+        progress.status("Scanning codebase and generating plan...")
+        plan = create_analysis_plan(models, target)
 
     # Apply --app-type override, if any.
     if app_type != AppTypeOverride.auto and app_type.value != plan.detected_app_type:
